@@ -18,9 +18,7 @@ public class UserController {
     @PostMapping
     public User addUser(@RequestBody User user) {
         validateUser(user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+        processUserName(user);
         user.setId(idCounter++);
         users.put(user.getId(), user);
         log.info("Добавлен новый пользователь: {}", user);
@@ -33,6 +31,7 @@ public class UserController {
             throw new NotFoundException("Пользователь с ID " + user.getId() + " не найден");
         }
         validateUser(user);
+        processUserName(user);
         users.put(user.getId(), user);
         log.info("Обновлен пользователь: {}", user);
         return user;
@@ -40,7 +39,15 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getAllUsers() {
+        log.debug("Получен запрос на список всех пользователей. Текущее количество: {}", users.size());
         return users.values();
+    }
+
+    private void processUserName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.debug("Имя пользователя пустое, использован логин: {}", user.getLogin());
+        }
     }
 
     private void validateUser(User user) {
