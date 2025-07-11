@@ -11,23 +11,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 class FilmorateApplicationTests {
 
-	@Autowired
-	private FilmController filmController;
+    @Autowired
+    private FilmController filmController;
 
-	@Autowired
-	private UserController userController;
+    @Autowired
+    private UserController userController;
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
-	@Test
-	void filmControllerShouldBeLoaded() {
-		assertNotNull(filmController, "FilmController должен быть загружен в контекст приложения");
-	}
+    @Test
+    void filmControllerShouldBeLoaded() {
+        assertNotNull(filmController, "FilmController должен быть загружен в контекст приложения");
+    }
 
-	@Test
-	void userControllerShouldBeLoaded() {
-		assertNotNull(userController, "UserController должен быть загружен в контекст приложения");
-	}
+    @Test
+    void userControllerShouldBeLoaded() {
+        assertNotNull(userController, "UserController должен быть загружен в контекст приложения");
+    }
 }
