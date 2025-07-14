@@ -5,15 +5,19 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
 import java.util.*;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -38,11 +42,19 @@ public class FilmService {
 
     public void addLike(int filmId, int userId) {
         Film film = getFilm(filmId);
+        // Проверяем существование пользователя через userStorage
+        if (userStorage.getUser(userId) == null) {
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
         film.getLikes().add(userId);
     }
 
     public void removeLike(int filmId, int userId) {
         Film film = getFilm(filmId);
+        // Проверяем существование пользователя через userStorage
+        if (userStorage.getUser(userId) == null) {
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
         film.getLikes().remove(userId);
     }
 
