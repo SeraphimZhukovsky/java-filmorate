@@ -27,11 +27,7 @@ public class UserService {
     }
 
     public User getUser(int id) {
-        Optional<User> user = userStorage.getUser(id);
-        if (user.isEmpty()) {
-            throw new NotFoundException("Пользователь с ID " + id + " не найден");
-        }
-        return user.orElse(null);
+        return getUserOrThrow(id);
     }
 
     public Collection<User> getAllUsers() {
