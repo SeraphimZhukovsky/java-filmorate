@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.*;
@@ -37,8 +38,13 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         User user = getUserOrThrow(userId);
         User friend = getUserOrThrow(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
+        friend.getFriends().put(userId, FriendshipStatus.UNCONFIRMED);
+    }
+
+    public void confirmFriendship(int userId, int friendId) {
+        getUserOrThrow(userId).getFriends().put(friendId, FriendshipStatus.CONFIRMED);
+        getUserOrThrow(friendId).getFriends().put(userId, FriendshipStatus.CONFIRMED);
     }
 
     public void removeFriend(int userId, int friendId) {
@@ -49,18 +55,21 @@ public class UserService {
     }
 
     public Collection<User> getFriends(int id) {
-        User user = getUserOrThrow(id);
-        return user.getFriends().stream()
+        return getUserOrThrow(id).getFriends().entrySet().stream()
+                .filter(entry -> entry.getValue() == FriendshipStatus.CONFIRMED)
+                .map(Map.Entry::getKey)
                 .map(this::getUserOrThrow)
                 .collect(Collectors.toList());
     }
 
     public Collection<User> getCommonFriends(int id, int otherId) {
-        User user = getUserOrThrow(id);
-        User otherUser = getUserOrThrow(otherId);
+        Map<Integer, FriendshipStatus> userFriends = getUserOrThrow(id).getFriends();
+        Map<Integer, FriendshipStatus> otherFriends = getUserOrThrow(otherId).getFriends();
 
-        return user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
+        return userFriends.entrySet().stream()
+                .filter(entry -> entry.getValue() == FriendshipStatus.CONFIRMED)
+                .filter(entry -> otherFriends.getOrDefault(entry.getKey(), null) == FriendshipStatus.CONFIRMED)
+                .map(Map.Entry::getKey)
                 .map(this::getUserOrThrow)
                 .collect(Collectors.toList());
     }

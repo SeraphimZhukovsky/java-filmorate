@@ -5,10 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Data
 public class User {
@@ -28,9 +27,4 @@ public class User {
     private LocalDate birthday;
 
     private Map<Integer, FriendshipStatus> friends;
-}
-
-enum FriendshipStatus {
-    CONFIRMED,
-    UNCONFIRMED
 }
