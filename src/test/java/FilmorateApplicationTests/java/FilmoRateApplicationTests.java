@@ -1,4 +1,4 @@
-package FilmorateApplicationTests;
+package FilmorateApplicationTests.java;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
