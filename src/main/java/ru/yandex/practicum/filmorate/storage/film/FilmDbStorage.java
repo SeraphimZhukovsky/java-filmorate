@@ -28,8 +28,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film addFilm(Film film) {
         validateMpa(film.getMpa().getId());
 
-        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " + "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -49,11 +48,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void validateMpa(int mpaId) {
         try {
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM mpa_ratings WHERE id = ?",
-                    Integer.class,
-                    mpaId
-            );
+            Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM mpa_ratings WHERE id = ?", Integer.class, mpaId);
 
             if (count == null || count == 0) {
                 throw new DataIntegrityViolationException("MPA rating with id " + mpaId + " not found");
@@ -67,15 +62,8 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         validateMpa(film.getMpa().getId());
 
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
-                "WHERE id = ?";
-        jdbcTemplate.update(sql,
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getId());
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " + "WHERE id = ?";
+        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
 
         updateFilmGenres(film);
         return film;
@@ -117,11 +105,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(fl.user_id) AS likes_count " +
-                "FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id " +
-                "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
-                "GROUP BY f.id, m.name, f.name, f.description, f.release_date, f.duration " +
-                "ORDER BY likes_count DESC LIMIT ?";
+        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(fl.user_id) AS likes_count " + "FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id " + "LEFT JOIN film_likes fl ON f.id = fl.film_id " + "GROUP BY f.id, m.name, f.name, f.description, f.release_date, f.duration " + "ORDER BY likes_count DESC LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, count);
         films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
         return films;
@@ -140,10 +124,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Genre> getFilmGenres(int filmId) {
         String sql = "SELECT g.id, g.name FROM genres g JOIN film_genres fg ON g.id = fg.genre_id WHERE fg.film_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(
-                rs.getInt("id"),
-                rs.getString("name")
-        ), filmId));
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("id"), rs.getString("name")), filmId));
     }
 
     private void updateFilmGenres(Film film) {
