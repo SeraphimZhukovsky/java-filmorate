@@ -15,6 +15,7 @@
     <description>filmorate</description>
     <properties>
         <java.version>21</java.version>
+        <skipNativeTests>true</skipNativeTests>  <!-- Отключает нативные тесты -->
     </properties>
     <dependencies>
         <dependency>

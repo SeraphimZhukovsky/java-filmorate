@@ -8,5 +8,7 @@ public class Mpa {
     private String name;
 
     public Mpa(int mpaRatingId, String mpaName) {
+        this.id = mpaRatingId;
+        this.name = mpaName;
     }
 }

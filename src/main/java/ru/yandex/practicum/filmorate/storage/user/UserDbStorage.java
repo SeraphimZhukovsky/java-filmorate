@@ -83,6 +83,16 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 
+    @Override
+    public Optional<User> findUserById(int id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapRowToUser, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

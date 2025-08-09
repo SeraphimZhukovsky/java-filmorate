@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -53,6 +54,11 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Collection<User> getCommonFriends(int userId, int otherId) {
         return List.of();
+    }
+
+    @Override
+    public Optional<User> findUserById(int id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     private void processUserName(User user) {
