@@ -105,14 +105,18 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name FROM films f " +
-                "JOIN mpa_ratings m ON f.mpa_rating_id = m.id " +
+        String sql = "SELECT f.*, m.name as mpa_name, COUNT(fl.user_id) as likes_count " +
+                "FROM films f " +
                 "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.id " +
                 "GROUP BY f.id " +
-                "ORDER BY COUNT(fl.user_id) DESC " +
+                "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Film film = mapRowToFilm(rs, rowNum);
+            return film;
+        }, count);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

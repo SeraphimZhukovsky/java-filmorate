@@ -73,6 +73,7 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         User user = getUserOrThrow(userId);
+        filmStorage.addLike(filmId, userId);
         film.getLikes().add(user.getId());
     }
 
