@@ -1,5 +1,3 @@
-package ru.yandex.practicum.filmorate;
-
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class})
-class FilmorateApplicationTests {
+class FilmoRateApplicationTests {
     private final FilmDbStorage filmStorage;
     private final JdbcTemplate jdbcTemplate;
 
