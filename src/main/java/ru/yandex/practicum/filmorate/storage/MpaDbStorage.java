@@ -6,6 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,26 +17,22 @@ public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Mpa> getAllMpaRatings() {
-        String sql = "SELECT * FROM mpa_ratings ORDER BY id";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> new Mpa(
-                rs.getInt("id"),
-                rs.getString("name")
-        ));
+    public Optional<Mpa> getMpaRatingById(int id) {
+        String sql = "SELECT * FROM mpa_ratings WHERE id = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public Optional<Mpa> getMpaRatingById(int id) {
-        Optional<Mpa> result;
-        String sql = "SELECT * FROM mpa_ratings WHERE id = ?";
-        try {
-            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new Mpa(
-                    rs.getInt("id"),
-                    rs.getString("name")
-            ), id));
-        } catch (EmptyResultDataAccessException e) {
-            result = Optional.empty();
-        }
-        return result;
+    public List<Mpa> getAllMpaRatings() {
+        String sql = "SELECT * FROM mpa_ratings ORDER BY id";
+        return jdbcTemplate.query(sql, this::mapRowToMpa);
+    }
+
+    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
+        return new Mpa(rs.getInt("id"), rs.getString("name"));
     }
 }

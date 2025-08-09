@@ -4,13 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -39,41 +36,26 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
+        getUserOrThrow(userId);
         getUserOrThrow(friendId);
-        user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
-    }
-
-    public void confirmFriendship(int userId, int friendId) {
-        getUserOrThrow(userId).getFriends().put(friendId, FriendshipStatus.CONFIRMED);
-        getUserOrThrow(friendId).getFriends().put(userId, FriendshipStatus.CONFIRMED);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
-    public Collection<User> getFriends(int id) {
-        return getUserOrThrow(id).getFriends().entrySet().stream()
-                .filter(entry -> entry.getValue() == FriendshipStatus.CONFIRMED)
-                .map(Map.Entry::getKey)
-                .map(this::getUserOrThrow)
-                .collect(Collectors.toList());
+    public Collection<User> getFriends(int userId) {
+        getUserOrThrow(userId);
+        return userStorage.getFriends(userId);
     }
 
-    public Collection<User> getCommonFriends(int id, int otherId) {
-        Map<Integer, FriendshipStatus> userFriends = getUserOrThrow(id).getFriends();
-        Map<Integer, FriendshipStatus> otherFriends = getUserOrThrow(otherId).getFriends();
-
-        return userFriends.entrySet().stream()
-                .filter(entry -> entry.getValue() == FriendshipStatus.CONFIRMED)
-                .filter(entry -> otherFriends.getOrDefault(entry.getKey(), null) == FriendshipStatus.CONFIRMED)
-                .map(Map.Entry::getKey)
-                .map(this::getUserOrThrow)
-                .collect(Collectors.toList());
+    public Collection<User> getCommonFriends(int userId, int otherId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(otherId);
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     private User getUserOrThrow(int id) {

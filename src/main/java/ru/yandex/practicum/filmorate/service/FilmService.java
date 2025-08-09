@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Service
 public class FilmService {
@@ -34,7 +36,25 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
+        validateMpa(film.getMpa().getId());
+        if (film.getGenres() != null) {
+            validateGenres(film.getGenres());
+        }
         return filmStorage.addFilm(film);
+    }
+
+    private void validateMpa(int mpaId) {
+        if (!mpaStorage.getMpaRatingById(mpaId).isPresent()) {
+            throw new NotFoundException("MPA рейтинг с ID " + mpaId + " не найден");
+        }
+    }
+
+    private void validateGenres(Set<Genre> genres) {
+        genres.forEach(genre -> {
+            if (!genreStorage.getGenreById(genre.getId()).isPresent()) {
+                throw new NotFoundException("Жанр с ID " + genre.getId() + " не найден");
+            }
+        });
     }
 
     public Film updateFilm(Film film) {

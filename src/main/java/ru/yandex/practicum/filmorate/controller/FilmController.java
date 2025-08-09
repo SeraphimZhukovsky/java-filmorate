@@ -4,41 +4,31 @@ import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.GenreDto;
-import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
-    private final GenreService genreService;
-    private final MpaService mpaService;
 
     @Autowired
-    public FilmController(FilmService filmService, GenreService genreService, MpaService mpaService) {
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
-        this.genreService = genreService;
-        this.mpaService = mpaService;
     }
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
+        validateFilmReleaseDate(film.getReleaseDate());
         return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
+        validateFilmReleaseDate(film.getReleaseDate());
         return filmService.updateFilm(film);
     }
 
@@ -67,24 +57,9 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
-    @GetMapping("/genres")
-    public List<GenreDto> getAllGenres() {
-        return genreService.getAllGenres();
-    }
-
-    @GetMapping("/genres/{id}")
-    public GenreDto getGenreById(@PathVariable int id) {
-        return genreService.getGenreById(id);
-    }
-
-    /* Новые эндпоинты для MPA */
-    @GetMapping("/mpa")
-    public List<MpaDto> getAllMpaRatings() {
-        return mpaService.getAllMpaRatings();
-    }
-
-    @GetMapping("/mpa/{id}")
-    public MpaDto getMpaRatingById(@PathVariable int id) {
-        return mpaService.getMpaRatingById(id);
+    private void validateFilmReleaseDate(LocalDate releaseDate) {
+        if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
+        }
     }
 }
