@@ -8,5 +8,7 @@ public class GenreDto {
     private String name;
 
     public GenreDto(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 }
