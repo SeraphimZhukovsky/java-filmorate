@@ -15,7 +15,8 @@
     <description>filmorate</description>
     <properties>
         <java.version>21</java.version>
-        <skipNativeTests>true</skipNativeTests>  <!-- Отключает нативные тесты -->
+        <spring.aot.enabled>false</spring.aot.enabled> <!-- Добавьте это -->
+        <repackage.skip>true</repackage.skip> <!-- И это -->
     </properties>
     <dependencies>
         <dependency>
@@ -69,6 +70,15 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-test</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
