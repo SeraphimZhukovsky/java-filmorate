@@ -27,6 +27,9 @@ public class Film {
     private int duration;
 
     private final Set<Integer> likes = new HashSet<>();
-    private Set<String> genres;
-    private String mpaRating;
+
+    private Set<Genre> genres;
+
+    @NotNull(message = "Рейтинг MPA обязателен")
+    private Mpa mpa;
 }

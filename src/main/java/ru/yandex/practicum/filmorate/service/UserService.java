@@ -37,9 +37,8 @@ public class UserService {
 
     public void addFriend(int userId, int friendId) {
         User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
+        getUserOrThrow(friendId);
         user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
-        friend.getFriends().put(userId, FriendshipStatus.UNCONFIRMED);
     }
 
     public void confirmFriendship(int userId, int friendId) {

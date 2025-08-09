@@ -4,20 +4,29 @@ import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
+    private final GenreService genreService;
+    private final MpaService mpaService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, GenreService genreService, MpaService mpaService) {
         this.filmService = filmService;
+        this.genreService = genreService;
+        this.mpaService = mpaService;
     }
 
     @PostMapping
@@ -54,8 +63,28 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(
-            @RequestParam(defaultValue = "10") int count) {
+    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/genres")
+    public List<GenreDto> getAllGenres() {
+        return genreService.getAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public GenreDto getGenreById(@PathVariable int id) {
+        return genreService.getGenreById(id);
+    }
+
+    /* Новые эндпоинты для MPA */
+    @GetMapping("/mpa")
+    public List<MpaDto> getAllMpaRatings() {
+        return mpaService.getAllMpaRatings();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public MpaDto getMpaRatingById(@PathVariable int id) {
+        return mpaService.getMpaRatingById(id);
     }
 }
