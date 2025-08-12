@@ -13,8 +13,8 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -58,36 +58,65 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
+        validateMpa(film.getMpa().getId());
         getFilmOrThrow(film.getId());
         return filmStorage.updateFilm(film);
     }
 
     public Film getFilm(int id) {
-        return getFilmOrThrow(id);
+        Film film = getFilmOrThrow(id); // Проверяем существование фильма
+        Set<Genre> genres = genreStorage.getGenresByFilmId(id); // Получаем жанры
+        film.setGenres(genres); // Обогащаем фильм
+        return film;
     }
 
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        Collection<Film> films = filmStorage.getAllFilms();
+        if (films.isEmpty()) {
+            return films;
+        }
+
+        // Получаем все жанры для всех фильмов одним запросом
+        Map<Integer, Set<Genre>> filmGenresMap = genreStorage.getGenresForFilms(
+                films.stream().map(Film::getId).collect(Collectors.toList())
+        );
+
+        // Обогащаем фильмы жанрами из мапы
+        films.forEach(film -> film.setGenres(
+                filmGenresMap.getOrDefault(film.getId(), Collections.emptySet())
+        ));
+
+        return films;
     }
 
     public void addLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         User user = getUserOrThrow(userId);
         filmStorage.addLike(filmId, userId);
-        film.getLikes().add(user.getId());
     }
 
     public void removeLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         getUserOrThrow(userId);
-        film.getLikes().remove(userId);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        if (count <= 0) {
-            throw new ValidationException("Параметр count должен быть положительным числом");
+    public List<Film> getPopularFilms(int count) {
+        List<Film> films = filmStorage.getPopularFilms(count);
+        if (films.isEmpty()) {
+            return films;
         }
-        return filmStorage.getPopularFilms(count);
+
+        // Загружаем жанры для всех популярных фильмов одним запросом
+        Map<Integer, Set<Genre>> filmGenresMap = genreStorage.getGenresForFilms(
+                films.stream().map(Film::getId).collect(Collectors.toList())
+        );
+
+        // Добавляем жанры к фильмам
+        films.forEach(film -> film.setGenres(
+                filmGenresMap.getOrDefault(film.getId(), Collections.emptySet())
+        ));
+
+        return films;
     }
 
     private Film getFilmOrThrow(int id) {

@@ -8,8 +8,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,6 +23,30 @@ public class GenreDbStorage implements GenreStorage {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Set<Genre> getGenresByFilmId(int filmId) {
+        String sql = "SELECT g.id, g.name FROM genres g " +
+                "JOIN film_genres fg ON g.id = fg.genre_id " +
+                "WHERE fg.film_id = ?";
+        return new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+    }
+
+    @Override
+    public Map<Integer, Set<Genre>> getGenresForFilms(List<Integer> filmIds) {
+        String sql = "SELECT fg.film_id, g.id, g.name FROM film_genres fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(filmIds.size(), "?")) + ")";
+
+        Map<Integer, Set<Genre>> result = new HashMap<>();
+        jdbcTemplate.query(sql, filmIds.toArray(), rs -> {
+            int filmId = rs.getInt("film_id");
+            Genre genre = new Genre(rs.getInt("id"), rs.getString("name"));
+            result.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+        });
+
+        return result;
     }
 
     @Override

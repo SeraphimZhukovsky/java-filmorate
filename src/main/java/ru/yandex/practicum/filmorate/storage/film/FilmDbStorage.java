@@ -26,8 +26,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        validateMpa(film.getMpa().getId());
-
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " + "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -60,8 +58,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        validateMpa(film.getMpa().getId());
-
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " + "WHERE id = ?";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
 
@@ -73,11 +69,7 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> getFilm(int id) {
         String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id WHERE f.id = ?";
         try {
-            Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
-            if (film != null) {
-                film.setGenres(getFilmGenres(id));
-            }
-            return Optional.ofNullable(film);
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -86,9 +78,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getAllFilms() {
         String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id";
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
-        films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
-        return films;
+        return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
     @Override
@@ -105,18 +95,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name as mpa_name, COUNT(fl.user_id) as likes_count " +
+        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(fl.user_id) AS likes_count " +
                 "FROM films f " +
                 "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
                 "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.id " +
                 "GROUP BY f.id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
-
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Film film = mapRowToFilm(rs, rowNum);
-            return film;
-        }, count);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
@@ -132,9 +118,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Genre> getFilmGenres(int filmId) {
         String sql = "SELECT g.id, g.name FROM genres g JOIN film_genres fg ON g.id = fg.genre_id WHERE fg.film_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) ->
-                        new Genre(rs.getInt("id"), rs.getString("name")),
-                filmId));
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("id"), rs.getString("name")), filmId));
     }
 
     private void updateFilmGenres(Film film) {
