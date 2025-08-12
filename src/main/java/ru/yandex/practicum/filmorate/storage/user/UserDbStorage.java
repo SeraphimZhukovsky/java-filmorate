@@ -98,11 +98,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 
-    @Override
-    public Optional<User> findUserById(int id) {
-        return getUser(id);
-    }
-
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));
