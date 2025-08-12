@@ -97,6 +97,7 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         getUserOrThrow(userId);
+        filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getPopularFilms(int count) {
