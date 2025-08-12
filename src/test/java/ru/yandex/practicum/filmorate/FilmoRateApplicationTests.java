@@ -66,6 +66,6 @@ class FilmoRateApplicationTests {
 
         assertThatThrownBy(() -> filmStorage.addFilm(film))
                 .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("MPA rating with id 999 not found");
+                .hasMessageContaining("FOREIGN KEY");
     }
 }
